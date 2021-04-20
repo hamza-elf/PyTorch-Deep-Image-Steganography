@@ -1,4 +1,8 @@
 torch
 tensorboardX
 argparse
-shutil
+# shutil
+
+pillow~=7.2.0
+numpy~=1.19.5
+torchvision~=0.8.1

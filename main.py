@@ -51,7 +51,7 @@ parser.add_argument('--decay_round', type=int, default=10,
                     help='learning rate decay 0.5 each decay_round')
 parser.add_argument('--beta1', type=float, default=0.5,
                     help='beta1 for adam. default=0.5')
-parser.add_argument('--cuda', type=bool, default=True,
+parser.add_argument('--cuda', type=bool, default=False,
                     help='enables cuda')
 parser.add_argument('--ngpu', type=int, default=1,
                     help='number of GPUs to use')
@@ -198,28 +198,34 @@ def main():
                 transforms.ToTensor(),
             ]))
         assert test_dataset
+        
+    if torch.cuda.is_available():
+        map_location=lambda storage, loc: storage.cuda()
+    else:
+        map_location='cpu'
 
     Hnet = UnetGenerator(input_nc=6, output_nc=3, num_downs=7, output_function=nn.Sigmoid)
-    Hnet.cuda()
+#     Hnet.cuda()
     Hnet.apply(weights_init)
     # whether to load pre-trained model
     if opt.Hnet != "":
-        Hnet.load_state_dict(torch.load(opt.Hnet))
+        Hnet.load_state_dict(torch.load(opt.Hnet,map_location=map_location))
     if opt.ngpu > 1:
         Hnet = torch.nn.DataParallel(Hnet).cuda()
     print_network(Hnet)
 
     Rnet = RevealNet(output_function=nn.Sigmoid)
-    Rnet.cuda()
+#     Rnet.cuda()
     Rnet.apply(weights_init)
     if opt.Rnet != '':
-        Rnet.load_state_dict(torch.load(opt.Rnet))
+        Rnet.load_state_dict(torch.load(opt.Rnet,map_location=map_location))
     if opt.ngpu > 1:
         Rnet = torch.nn.DataParallel(Rnet).cuda()
     print_network(Rnet)
 
     # MSE loss
-    criterion = nn.MSELoss().cuda()
+#     criterion = nn.MSELoss().cuda()
+    criterion = nn.MSELoss()
     # training mode
     if opt.test == '':
         # setup optimizer
@@ -389,7 +395,7 @@ def validation(val_loader, epoch, Hnet, Rnet, criterion):
 
         container_img = Hnet(concat_imgv)
         errH = criterion(container_img, cover_imgv)
-        Hlosses.update(errH.data[0], this_batch_size)
+        Hlosses.update(errH.data, this_batch_size)
 
         rev_secret_img = Rnet(container_img)
         secret_imgv = Variable(secret_img, volatile=True)
@@ -450,12 +456,12 @@ def test(test_loader, epoch, Hnet, Rnet, criterion):
 
         container_img = Hnet(concat_imgv)  # take concat_img as input of H-net and get the container_img
         errH = criterion(container_img, cover_imgv)  # H-net reconstructed error
-        Hlosses.update(errH.data[0], this_batch_size)
+        Hlosses.update(errH.data, this_batch_size)
 
         rev_secret_img = Rnet(container_img)  # containerImg as input of R-net and get "rev_secret_img"
         secret_imgv = Variable(secret_img, volatile=True)  # secret_imgv as label of R-net
         errR = criterion(rev_secret_img, secret_imgv)  # R-net reconstructed error
-        Rlosses.update(errR.data[0], this_batch_size)
+        Rlosses.update(errR.data, this_batch_size)
         save_result_pic(this_batch_size, cover_img, container_img.data, secret_img, rev_secret_img.data, epoch, i,
                         opt.testPics)
 
