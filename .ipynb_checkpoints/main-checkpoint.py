@@ -498,17 +498,22 @@ def print_log(log_info, log_path, console=True):
 # save result pics, coverImg filePath and secretImg filePath
 def save_result_pic(this_batch_size, originalLabelv, ContainerImg, secretLabelv, RevSecImg, epoch, i, save_path):
     if not opt.debug:
+        
+        
         originalFrames = originalLabelv.resize_(this_batch_size, 3, opt.imageSize, opt.imageSize)
         containerFrames = ContainerImg.resize_(this_batch_size, 3, opt.imageSize, opt.imageSize)
         secretFrames = secretLabelv.resize_(this_batch_size, 3, opt.imageSize, opt.imageSize)
-        revSecFrames = RevSecImg.resize_(this_batch_size, 3, opt.imageSize, opt.imageSize)
-
+        revSecFrames = RevSecImg.resize_(this_batch_size, 3, opt.imageSize, opt.imageSize)     
+        
         showContainer = torch.cat([originalFrames, containerFrames], 0)
         showReveal = torch.cat([secretFrames, revSecFrames], 0)
         # resultImg contains four rows: coverImg, containerImg, secretImg, RevSecImg, total this_batch_size columns
         resultImg = torch.cat([showContainer, showReveal], 0)
         resultImgName = '%s/ResultPics_epoch%03d_batch%04d.png' % (save_path, epoch, i)
         vutils.save_image(resultImg, resultImgName, nrow=this_batch_size, padding=1, normalize=True)
+        
+        vutils.save_image(ContainerImg,'%s/cover_img.png' % (save_path))
+        vutils.save_image(RevSecImg,'%s/RevSec_img.png' % (save_path))
 
 
 class AverageMeter(object):
