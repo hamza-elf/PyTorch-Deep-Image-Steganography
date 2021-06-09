@@ -101,27 +101,6 @@ def print_network(net):
     print_log('Total number of parameters: %d' % num_params, logPath)
 
 
-# save code of current experiment
-def save_current_codes(des_path):
-    main_file_path = os.path.realpath(__file__)  # eg：/n/liyz/videosteganography/main.py
-    cur_work_dir, mainfile = os.path.split(main_file_path)  # eg：/n/liyz/videosteganography/
-
-    new_main_path = os.path.join(des_path, mainfile)
-    shutil.copyfile(main_file_path, new_main_path)
-
-    data_dir = cur_work_dir + "/data/"
-    new_data_dir_path = des_path + "/data/"
-    shutil.copytree(data_dir, new_data_dir_path)
-
-    model_dir = cur_work_dir + "/models/"
-    new_model_dir_path = des_path + "/models/"
-    shutil.copytree(model_dir, new_model_dir_path)
-
-    utils_dir = cur_work_dir + "/utils/"
-    new_utils_dir_path = des_path + "/utils/"
-    shutil.copytree(utils_dir, new_utils_dir_path)
-
-
 def main():
     ############### define global parameters ###############
     global opt, optimizerH, optimizerR, writer, logPath, schedulerH, schedulerR, val_loader, smallestLoss
