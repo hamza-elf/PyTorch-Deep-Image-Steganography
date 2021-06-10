@@ -107,77 +107,8 @@ def main():
 
     #################  output configuration   ###############
     opt = parser.parse_args()
-
-    if torch.cuda.is_available() and not opt.cuda:
-        print("WARNING: You have a CUDA device, "
-              "so you should probably run with --cuda")
-
-    cudnn.benchmark = True
-
-    ############  create dirs to save the result #############
-    if not opt.debug:
-        try:
-            cur_time = time.strftime('%Y-%m-%d-%H_%M_%S', time.localtime())
-            experiment_dir = opt.hostname + "_" + cur_time + opt.remark
-            opt.outckpts += experiment_dir + "/checkPoints"
-            opt.trainpics += experiment_dir + "/trainPics"
-            opt.validationpics += experiment_dir + "/validationPics"
-            opt.outlogs += experiment_dir + "/trainingLogs"
-            opt.outcodes += experiment_dir + "/codes"
-            opt.testPics += experiment_dir + "/testPics"
-            if not os.path.exists(opt.outckpts):
-                os.makedirs(opt.outckpts)
-            if not os.path.exists(opt.trainpics):
-                os.makedirs(opt.trainpics)
-            if not os.path.exists(opt.validationpics):
-                os.makedirs(opt.validationpics)
-            if not os.path.exists(opt.outlogs):
-                os.makedirs(opt.outlogs)
-            if not os.path.exists(opt.outcodes):
-                os.makedirs(opt.outcodes)
-            if (not os.path.exists(opt.testPics)) and opt.test != '':
-                os.makedirs(opt.testPics)
-
-        except OSError:
-            print("mkdir failed   XXXXXXXXXXXXXXXXXXXXX")
-
     logPath = opt.outlogs + '/%s_%d_log.txt' % (opt.dataset, opt.batchSize)
 
-    print_log(str(opt), logPath)
-    save_current_codes(opt.outcodes)
-
-    if opt.test == '':
-        # tensorboardX writer
-        writer = SummaryWriter(comment='**' + opt.remark)
-        ##############   get dataset   ############################
-        traindir = os.path.join(DATA_DIR, 'train')
-        valdir = os.path.join(DATA_DIR, 'val')
-        train_dataset = MyImageFolder(
-            traindir,
-            transforms.Compose([
-                transforms.Resize([opt.imageSize, opt.imageSize]),  # resize to a given size
-                transforms.ToTensor(),
-            ]))
-        val_dataset = MyImageFolder(
-            valdir,
-            transforms.Compose([
-                transforms.Resize([opt.imageSize, opt.imageSize]),
-                transforms.ToTensor(),
-            ]))
-        assert train_dataset
-        assert val_dataset
-    else:
-        opt.Hnet = "./checkPoint/netH_epoch_73,sumloss=0.000447,Hloss=0.000258.pth"
-        opt.Rnet = "./checkPoint/netR_epoch_73,sumloss=0.000447,Rloss=0.000252.pth"
-        testdir = opt.test
-        test_dataset = MyImageFolder(
-            testdir,
-            transforms.Compose([
-                transforms.Resize([opt.imageSize, opt.imageSize]),
-                transforms.ToTensor(),
-            ]))
-        assert test_dataset
-        
     if torch.cuda.is_available():
         map_location=lambda storage, loc: storage.cuda()
     else:
