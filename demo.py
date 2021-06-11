@@ -1,14 +1,5 @@
-import argparse
-import os
-import shutil
-import socket
-import time
+# from . import main
 
-
-import utils.transformed as transforms
-from data.ImageFolderDataset import MyImageFolder
-from models.HidingUNet import UnetGenerator
-from models.RevealNet import RevealNet
 import PySimpleGUI as sg
 from pathlib import Path
 from PIL import Image
@@ -38,30 +29,29 @@ def process_images():
 # sg.theme('DarkAmber')   # Add a touch of color
 w, h = size_of_image = (250, 250)
 # All the stuff inside your window.
+layout_encoder = [[sg.Text('Réseau Codeur', font=("Helvetica", 25))],
+                  [sg.FileBrowse('Couverture',font=("Helvetica", 12)), sg.InputText(enable_events=True, key='-FCOUV-')],
                   [sg.Image(key='-IMCOUV-', size=(250, 250))],
-                  [sg.FileBrowse('Secret'), sg.InputText(enable_events=True, key='-FSEC-')],
+                  [sg.FileBrowse('Secret', font=("Helvetica", 12)), sg.InputText(enable_events=True, key='-FSEC-')],
                   [sg.Image(key='-IMSEC-', size=(250, 250))],
-                  [sg.Button('Procéder', enable_events=True, key='-PROCESS-',visible=False),
+                  [sg.Button('Procéder', font=("Helvetica", 12), button_color=('','green'), enable_events=True, key='-PROCESS-',visible=False),
                    sg.Button('Cancel')]]
-layout_decoder = [[sg.Text('Réseau Décodeur')],
-                  [sg.Text('Image Container')],
 layout_text = [[sg.Image(filename='ensias.png', pad=((0,0),(0,450)))],
                {sg.Text('Encadré par : \nPr.Abdelaziz S.DOUKKALI', justification='left', font=("Helvetica", 12),
                         text_color='black')}]
 layout_decoder = [[sg.Text('Réseau Décodeur', font=("Helvetica", 25))],
                   [sg.Text('Image Stego', font=("Helvetica", 16))],
                   [sg.Image(key='-IMCONTAINER-', size=(250, 250)),
-                   sg.Button('Extraire', enable_events=True, key='-EXTRACT-',visible=False)],
-                  [sg.Text('Image Secrète extraite')],
                    sg.Button('Extraire', font=("Helvetica", 12), button_color=('','green'), enable_events=True, key='-EXTRACT-', visible=False)],
                   [sg.Text('Image Secrète extraite',font=("Helvetica", 16))],
                   [sg.Image(key='-IMREVSEC-', size=(250, 250))]]
-layout = [[sg.Column(layout_encoder, pad=(0, 0)),
+layout = [[sg.Column(layout_encoder, size=(400, 700), pad=(0, 0)),
            sg.VSep(),
-           sg.Column(layout_decoder, pad=(0, 0))]]
+           sg.Column(layout_decoder, size=(400, 700), pad=(0, 0)),
+           sg.Column(layout_text, vertical_alignment='bottom',element_justification='right')]]
 
 # Create the Window
-window = sg.Window('Stéganographie par CNN', layout, size=(900, 600), icon='loupe.ico')
+window = sg.Window('Stéganographie par CNN - DERBOUGUY & EL FAIDI - 2A SSI 2021', layout, size=(1050, 700), icon='loupe.ico')
 # Event Loop to process "events" and get the "values" of the inputs
 while True:
     event, values = window.read()
@@ -80,4 +70,4 @@ while True:
         window['-EXTRACT-'].update(visible=True)
     elif event == '-EXTRACT-':
         window['-IMREVSEC-'].update(filename=path + '/RevSec.png')
-window.close()
+window.close
